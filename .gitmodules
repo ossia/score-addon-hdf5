@@ -1,0 +1,7 @@
+[submodule "3rdparty/HighFive"]
+	path = 3rdparty/HighFive
+	url = https://github.com/BlueBrain/HighFive
+[submodule "3rdparty/hdf5"]
+	path = 3rdparty/hdf5
+	url = https://github.com/HDFGroup/hdf5
+	branch = hdf5_1_14_5
