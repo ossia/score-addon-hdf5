@@ -66,7 +66,10 @@ target_link_libraries(score_addon_datareader PUBLIC
 
 setup_score_plugin(score_addon_datareader)
 
-
+add_library(score_addon_hdf5
+    DataReader/HDF5Ports.hpp
+    DataReader/HDF5Ports.cpp
+)
 avnd_score_plugin_init(
   BASE_TARGET score_addon_hdf5
 )
@@ -74,10 +77,20 @@ avnd_score_plugin_init(
 avnd_score_plugin_add(
   BASE_TARGET score_addon_hdf5
   SOURCES
-    DataReader/DataReaderModel.hpp
-    DataReader/DataReaderModel.cpp
+    DataReader/HDF5DataReader.hpp
+    DataReader/HDF5DataReader.cpp
   TARGET HDF5_Reader1D
   MAIN_CLASS HDF5_Reader1D
+  NAMESPACE DataReader
+)
+
+avnd_score_plugin_add(
+  BASE_TARGET score_addon_hdf5
+  SOURCES
+    DataReader/HDF5Texture.hpp
+    DataReader/HDF5Texture.cpp
+  TARGET HDF5_TextureReader
+  MAIN_CLASS HDF5_TextureReader
   NAMESPACE DataReader
 )
 
