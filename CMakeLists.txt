@@ -46,6 +46,8 @@ add_library(score_addon_datareader
     DataReader/CommandFactory.hpp
     DataReader/DropHDF5.hpp
     DataReader/DropHDF5.cpp
+    DataReader/DropCSV.hpp
+    DataReader/DropCSV.cpp
 
     score_addon_datareader.cpp
     score_addon_datareader.hpp
@@ -59,7 +61,7 @@ score_generate_command_list_file(
   "DataReader/CommandFactory.hpp"
 )
 target_link_libraries(score_addon_datareader PUBLIC
-    score_plugin_engine
+    score_plugin_avnd
     hdf5-static
     HighFive::HighFive
 )
