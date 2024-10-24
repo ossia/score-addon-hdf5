@@ -8,6 +8,11 @@ if(NOT TARGET score_plugin_avnd)
   return()
 endif()
 
+if (NOT ("cxx_std_23" IN_LIST CMAKE_CXX_COMPILER_FEATURES))
+ message(" -- HDF5 plugin requires C++23")
+ return()
+endif()
+
 project(score_addon_datareader LANGUAGES CXX)
 score_common_setup()
 
@@ -52,7 +57,7 @@ add_library(score_addon_datareader
     score_addon_datareader.cpp
     score_addon_datareader.hpp
 )
-target_compile_options(score_addon_datareader PRIVATE -std=c++23)
+target_compile_options(score_addon_datareader PRIVATE -std=c++2b)
 target_compile_features(score_addon_datareader PRIVATE cxx_std_23)
 set_target_properties(score_addon_datareader PROPERTIES SCORE_CUSTOM_PCH 1)
 
