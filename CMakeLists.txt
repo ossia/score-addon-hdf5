@@ -8,7 +8,11 @@ if(NOT TARGET score_plugin_avnd)
   return()
 endif()
 
-if (NOT ("cxx_std_23" IN_LIST CMAKE_CXX_COMPILER_FEATURES))
+if(MSVC)
+    return()
+endif()
+
+if (NOT has_std_2b_flag)
  message(" -- HDF5 plugin requires C++23")
  return()
 endif()

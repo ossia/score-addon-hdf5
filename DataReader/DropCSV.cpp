@@ -17,7 +17,7 @@ namespace DataReader
 {
 
 static Curve::SegmentData
-make_segment(int& current_id, double& cur_x, double& cur_y, double x, double y)
+make_segment_csv(int& current_id, double& cur_x, double& cur_y, double x, double y)
 {
   Curve::SegmentData dat;
   dat.id = Id<Curve::SegmentModel>{current_id};
@@ -50,7 +50,7 @@ static auto range_to_automation(const std::span<float>& points)
     auto x = double(i) / N;
     auto y = points[i];
 
-    segt.push_back(make_segment(current_id, cur_x, cur_y, x, y));
+    segt.push_back(make_segment_csv(current_id, cur_x, cur_y, x, y));
     current_id++;
   }
   segt.front().previous = std::nullopt;
