@@ -1,7 +1,5 @@
 #pragma once
 
-#define HIGHFIVE_LOG_LEVEL HIGHFIVE_LOG_LEVEL_ERROR
-
 #include <DataReader/HDF5Ports.hpp>
 #include <halp/controls.hpp>
 #include <halp/meta.hpp>

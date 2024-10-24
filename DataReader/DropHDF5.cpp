@@ -5,7 +5,7 @@
 
 #include <Automation/AutomationModel.hpp>
 
-#include <highfive/H5Easy.hpp>
+#include <DataReader/IncludeH5.hpp>
 #include <highfive/boost.hpp>
 #include <highfive/highfive.hpp>
 

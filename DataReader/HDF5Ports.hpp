@@ -1,12 +1,11 @@
 #pragma once
 
-#define HIGHFIVE_LOG_LEVEL HIGHFIVE_LOG_LEVEL_ERROR
 #include <ossia/detail/destination_index.hpp>
 
+#include <DataReader/IncludeH5.hpp>
 #include <halp/controls.hpp>
 #include <halp/file_port.hpp>
 #include <halp/meta.hpp>
-#include <highfive/H5Easy.hpp>
 namespace DataReader
 {
 struct HDF5ObjectBase

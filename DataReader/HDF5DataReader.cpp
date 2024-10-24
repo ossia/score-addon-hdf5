@@ -2,7 +2,7 @@
 
 #include <ossia/network/common/destination_qualifiers.hpp>
 
-#include <highfive/H5Easy.hpp>
+#include <DataReader/IncludeH5.hpp>
 #include <highfive/boost.hpp>
 #include <highfive/highfive.hpp>
 namespace DataReader

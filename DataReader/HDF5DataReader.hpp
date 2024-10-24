@@ -1,7 +1,5 @@
 #pragma once
 
-#define HIGHFIVE_LOG_LEVEL HIGHFIVE_LOG_LEVEL_ERROR
-
 #include <ossia/network/value/value.hpp>
 
 #include <DataReader/HDF5Ports.hpp>
