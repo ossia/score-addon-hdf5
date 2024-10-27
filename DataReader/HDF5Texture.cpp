@@ -1,5 +1,4 @@
 #include "HDF5Texture.hpp"
-
 namespace DataReader
 {
 // Note that as soon as we use textures,
@@ -7,7 +6,6 @@ namespace DataReader
 // (e.g. maybe 1000hz if you have a decent enough soundcard).
 void HDF5_TextureReader::operator()()
 {
-  qDebug() << this->inputs.h5.file.bytes.size();
   //   // Do some magic
   //   int k = 0;
   //   for(unsigned char& c : bytes)
