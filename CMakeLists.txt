@@ -8,7 +8,7 @@ if(NOT TARGET score_plugin_avnd)
   return()
 endif()
 
-if(MSVC)
+if(EMSCRIPTEN OR MSVC)
     return()
 endif()
 
