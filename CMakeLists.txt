@@ -21,39 +21,52 @@ project(score_addon_datareader LANGUAGES CXX)
 score_common_setup()
 
 block()
-  set(HDF5_IS_PARALLEL 0)
-  set(HDF5_ENABLE_NONSTANDARD_FEATURES 0)
-  set(HDF5_EXTERNALLY_CONFIGURED 1)
-  set(HDF5_INSTALL_NO_DEVELOPMENT 1)
-  set(HDF5_ENABLE_EMBEDDED_LIBINFO 0)
-  set(HDF5_NO_PACKAGES 1)
-  set(HDF5_BUILD_TOOLS 0)
-  set(HDF5_BUILD_TESTS 0)
-  set(HDF5_BUILD_UTILS 0)
-  set(HDF5_BUILD_EXAMPLES 0)
-  set(HDF5_BUILD_STATIC_TOOLS 0)
-#  set(HDF5_USE_ZLIB_NG 1)
-  set(HDF5_USE_ZLIB_STATIC 0)
-  set(HDF5_BUILD_PARALLEL_TOOLS 0)
-  set(HDF5_ENABLE_PARALLEL 0)
-  set(ZLIB_USE_LOCALCONTENT 1)
-  set(HDF5_ALLOW_EXTERNAL_SUPPORT NO)
-  set(BUILD_SHARED_LIBS 0)
-  set(BUILD_STATIC_LIBS 1)
-  if(WIN32)
-      set(H5_HAVE_VASPRINTF 0 CACHE "" INTERNAL)
+  if(NOT OSSIA_USE_SYSTEM_LIBRARIES)
+    set(HDF5_IS_PARALLEL 0)
+    set(HDF5_ENABLE_NONSTANDARD_FEATURES 0)
+    set(HDF5_EXTERNALLY_CONFIGURED 1)
+    set(HDF5_INSTALL_NO_DEVELOPMENT 1)
+    set(HDF5_ENABLE_EMBEDDED_LIBINFO 0)
+    set(HDF5_NO_PACKAGES 1)
+    set(HDF5_BUILD_TOOLS 0)
+    set(HDF5_BUILD_TESTS 0)
+    set(HDF5_BUILD_UTILS 0)
+    set(HDF5_BUILD_EXAMPLES 0)
+    set(HDF5_BUILD_STATIC_TOOLS 0)
+#    set(HDF5_USE_ZLIB_NG 1)
+    set(HDF5_USE_ZLIB_STATIC 0)
+    set(HDF5_BUILD_PARALLEL_TOOLS 0)
+    set(HDF5_ENABLE_PARALLEL 0)
+    set(ZLIB_USE_LOCALCONTENT 1)
+    set(HDF5_ALLOW_EXTERNAL_SUPPORT NO)
+    set(BUILD_SHARED_LIBS 0)
+    set(BUILD_STATIC_LIBS 1)
+    if(WIN32)
+        set(H5_HAVE_VASPRINTF 0 CACHE "" INTERNAL)
+    endif()
+    add_subdirectory(3rdparty/hdf5)
   endif()
-  add_subdirectory(3rdparty/hdf5)
+
   block()
     set(HIGHFIVE_EXAMPLES 0)
     set(HIGHFIVE_UNIT_TESTS 0)
     set(HIGHFIVE_BUILD_DOCS 0)
-    set(HDF5_IS_PARALLEL 0)
-    set(HIGHFIVE_FIND_HDF5 0)
+
+    if( OSSIA_USE_SYSTEM_LIBRARIES)
+      set(HIGHFIVE_FIND_HDF5 1)
+    else()
+      set(HDF5_IS_PARALLEL 0)
+      set(HIGHFIVE_FIND_HDF5 0)
+    endif()
     add_subdirectory(3rdparty/HighFive)
   endblock()
 endblock()
 
+if(TARGET hdf5-static)
+  set(ossia_hdf5_lib hdf5-static)
+elseif(TARGET hdf5::hdf5)
+  set(ossia_hdf5_lib hdf5::hdf5)
+endif()
 add_library(score_addon_datareader
     DataReader/CommandFactory.hpp
     DataReader/DropHDF5.hpp
@@ -74,7 +87,7 @@ score_generate_command_list_file(
 )
 target_link_libraries(score_addon_datareader PUBLIC
     score_plugin_avnd
-    hdf5-static
+    ${ossia_hdf5_lib}
     HighFive::HighFive
 )
 
@@ -108,9 +121,10 @@ avnd_score_plugin_add(
   NAMESPACE DataReader
 )
 
+
 target_link_libraries(score_addon_hdf5 PUBLIC
-    hdf5-static
     HighFive::HighFive
+    ${ossia_hdf5_lib}
 )
 avnd_score_plugin_finalize(
   BASE_TARGET score_addon_hdf5
