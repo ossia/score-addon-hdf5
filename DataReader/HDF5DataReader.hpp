@@ -17,6 +17,7 @@ struct HDF5_Reader1D : public HDF5ObjectBase
   halp_meta(c_name, "HDF5_Reader1D")
   halp_meta(author, "Jean-Michaël Celerier, Société des Arts Technologiques")
   halp_meta(description, "Read time series from an HDF5 file")
+  halp_meta(manual_url, "https://ossia.io/score-docs/processes/hdf5.html#1d-reader")
   halp_meta(uuid, "9b799392-6ec5-4255-b2b9-02c087722f68")
   struct
   {
