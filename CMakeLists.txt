@@ -93,6 +93,9 @@ target_link_libraries(score_addon_datareader PUBLIC
     HighFive::HighFive
 )
 
+target_include_directories(score_addon_datareader PUBLIC
+    "${3RDPARTY_FOLDER}/csv2/include"
+)
 setup_score_plugin(score_addon_datareader)
 
 add_library(score_addon_hdf5
