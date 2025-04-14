@@ -13,7 +13,7 @@ namespace DataReader
 struct HDF5_Reader1D : public HDF5ObjectBase
 {
   halp_meta(name, "HDF5 Reader")
-  halp_meta(category, "Data")
+  halp_meta(category, "Control/Data reading")
   halp_meta(c_name, "HDF5_Reader1D")
   halp_meta(author, "Jean-Michaël Celerier, Société des Arts Technologiques")
   halp_meta(description, "Read time series from an HDF5 file")

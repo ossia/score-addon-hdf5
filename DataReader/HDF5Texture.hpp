@@ -12,7 +12,7 @@ struct HDF5_TextureReader : public HDF5ObjectBase
 {
   halp_meta(name, "HDF5 Texture Reader")
   halp_meta(c_name, "HDF5_TextureReader")
-  halp_meta(category, "Data")
+  halp_meta(category, "Control/Data reading")
   halp_meta(author, "Jean-Michaël Celerier, Société des Arts Technologiques")
   halp_meta(description, "Read a texture from an HDF5 file")
   halp_meta(manual_url, "https://ossia.io/score-docs/processes/hdf5.html#texture-reader")
