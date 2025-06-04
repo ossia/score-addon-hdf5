@@ -64,7 +64,8 @@ void CSVDropHandler::dropPath(
     const score::DocumentContext& ctx) const noexcept
 {
   QFile f{filename.absolute};
-  f.open(QIODevice::ReadOnly);
+  auto res = f.open(QIODevice::ReadOnly);
+  SCORE_ASSERT(res);
   auto data = (const char*)f.map(0, f.size());
 
   csv2::Reader<> r;
@@ -72,6 +73,7 @@ void CSVDropHandler::dropPath(
 
   int columns = r.cols();
   auto header = r.header();
+  SCORE_ASSERT(columns >= 0);
   std::vector<std::vector<float>> tracks(columns);
   for(auto& t : tracks)
     t.reserve(r.rows());
@@ -89,27 +91,30 @@ void CSVDropHandler::dropPath(
     titles.push_back(a);
   }
 
+  int k = 0;
+
   std::string v;
-  for(const auto& row : r)
+  int rr = 0;
+  for(const csv2::Reader<>::Row& row : r)
   {
-    if(row.length() >= 1)
+    int track = 0;
+    for(const auto& cell : row)
     {
-      int track = 0;
-      for(const auto& cell : row)
-      {
-        v.clear();
-        cell.read_value(v);
+      if(track >= tracks.size())
+        break;
+      v.clear();
+      cell.read_value(v);
 
-        float res = 0.f;
-        if(auto r = ossia::parse_strict<float>(v))
-          res = *r;
+      float res = 0.f;
+      if(auto r = ossia::parse_strict<float>(v))
+        res = *r;
 
-        tracks[track].push_back(res);
-        mins[track] = std::min(mins[track], res);
-        maxs[track] = std::max(maxs[track], res);
-        track++;
-      }
+      tracks[track].push_back(res);
+      mins[track] = std::min(mins[track], res);
+      maxs[track] = std::max(maxs[track], res);
+      track++;
     }
+    rr++;
   }
 
   for(int i = 0; i < tracks.size(); i++)
