@@ -79,7 +79,7 @@ add_library(score_addon_datareader
     score_addon_datareader.cpp
     score_addon_datareader.hpp
 )
-target_compile_options(score_addon_datareader PRIVATE -std=c++2b)
+target_compile_options(score_addon_datareader PRIVATE -std=c++2b -Ofast)
 target_compile_features(score_addon_datareader PRIVATE cxx_std_23)
 set_target_properties(score_addon_datareader PROPERTIES SCORE_CUSTOM_PCH 1)
 
@@ -126,10 +126,24 @@ avnd_score_plugin_add(
   NAMESPACE DataReader
 )
 
+avnd_score_plugin_add(
+  BASE_TARGET score_addon_hdf5
+  SOURCES
+    DataReader/HDF5Audio.hpp
+    DataReader/HDF5Audio.cpp
+  TARGET HDF5_AudioReader
+  MAIN_CLASS HDF5_AudioReader
+  NAMESPACE DataReader
+)
+
 
 target_link_libraries(score_addon_hdf5 PUBLIC
     HighFive::HighFive
     ${ossia_hdf5_lib}
+)
+
+target_include_directories(score_addon_hdf5 PUBLIC
+    "${CMAKE_CURRENT_SOURCE_DIR}/../../../3rdparty/libossia/3rdparty/r8brain-free-src"
 )
 avnd_score_plugin_finalize(
   BASE_TARGET score_addon_hdf5
