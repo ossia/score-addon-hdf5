@@ -19,7 +19,7 @@ public:
   halp_meta(c_name, "hdf5_audio")
   halp_meta(category, "Data/HDF5")
   halp_meta(author, "ossia score")
-  halp_meta(description, "Read HDF5 data as audio with resampling")
+  halp_meta(description, "Read HDF5 data as audio with resampling and looping")
   halp_meta(uuid, "a8b4c5d6-e7f8-9012-3456-789abcdef012")
 
   struct inputs_t
@@ -29,6 +29,7 @@ public:
     halp::spinbox_f32<"Position", halp::range{0., 1., 0.}> percent;
     halp::spinbox_f32<"Input Sample Rate", halp::range{1., 192000., 44100.}> input_samplerate;
     halp::spinbox_i32<"Channels", halp::range{1, 64, 1}> channels;
+    halp::spinbox_i32<"Loop Duration", halp::range{0, 1000000, 0}> loop_duration;
   } inputs;
 
   struct outputs_t
