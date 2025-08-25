@@ -10,6 +10,8 @@ namespace DataReader
 
 void HDF5_AudioReader::operator()(halp::tick_musical t)
 {
+  if(!dataset)
+    return;
   if (!dataset->isValid())
     return;
 
@@ -71,14 +73,15 @@ void HDF5_AudioReader::operator()(halp::tick_musical t)
   else
   {
     // Use full dataset
-    start_frame = std::clamp(
-        (int)(inputs.percent.value * (effective_frames - t.frames)), 
-        0, 
-        effective_frames - t.frames);
+    int res = effective_frames - t.frames;
+    if(res < 0)
+      return;
+
+    start_frame = std::clamp((int)(inputs.percent.value * res), 0, res);
   }
 
   // For looping case, we need to handle potential wraparound
-  int frames_to_read;
+  int frames_to_read{};
   if (use_looping && start_frame + t.frames > effective_frames)
   {
     frames_to_read = effective_frames - start_frame;
@@ -189,7 +192,7 @@ void HDF5_AudioReader::operator()(halp::tick_musical t)
             temp_buffer.resize(frames_to_read);
             
           // Extract channel data
-          for (int i = 0; i < frames_to_read; i++)
+          for(int i = 0; i < frames_to_read && i < hdf5_data.size(); i++)
             temp_buffer[i] = hdf5_data[i][ch];
           
           // Resample
@@ -207,9 +210,11 @@ void HDF5_AudioReader::operator()(halp::tick_musical t)
         else
         {
           // Direct copy
-          for (int i = 0; i < frames_to_read; i++)
+          for(int i = 0; i < frames_to_read && i < hdf5_data.size(); i++)
+          {
             out_channel[i] = hdf5_data[i][ch];
-          
+          }
+
           // Handle wraparound for looping
           if (use_looping && frames_to_read < t.frames)
           {
