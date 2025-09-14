@@ -17,7 +17,7 @@ class HDF5_AudioReader : public HDF5ObjectBase
 public:
   halp_meta(name, "HDF5 Audio Reader")
   halp_meta(c_name, "hdf5_audio")
-  halp_meta(category, "Data/HDF5")
+  halp_meta(category, "Audio/Data files")
   halp_meta(author, "ossia score")
   halp_meta(description, "Read HDF5 data as audio with resampling and looping")
   halp_meta(uuid, "a8b4c5d6-e7f8-9012-3456-789abcdef012")
