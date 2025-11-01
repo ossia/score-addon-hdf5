@@ -40,7 +40,7 @@ struct HDF5_TextureReader : public HDF5ObjectBase
   HDF5_TextureReader()
   {
     // Allocate some initial data
-    bytes = halp::rgba_texture::allocate(480, 270);
+    bytes = halp::rgba_texture::allocate(480, 720);
     std::fill_n(bytes.data(), 480 * 720 * 4, 0);
   }
 

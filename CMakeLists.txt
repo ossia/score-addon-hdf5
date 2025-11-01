@@ -79,9 +79,8 @@ add_library(score_addon_datareader
     score_addon_datareader.cpp
     score_addon_datareader.hpp
 )
-target_compile_options(score_addon_datareader PRIVATE -std=c++2b -Ofast)
-target_compile_features(score_addon_datareader PRIVATE cxx_std_23)
-set_target_properties(score_addon_datareader PROPERTIES SCORE_CUSTOM_PCH 1)
+
+score_optimize_in_debug_mode(score_addon_datareader)
 
 score_generate_command_list_file(
   score_addon_datareader
