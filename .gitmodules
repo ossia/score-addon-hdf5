@@ -1,6 +1,6 @@
 [submodule "3rdparty/HighFive"]
 	path = 3rdparty/HighFive
-	url = https://github.com/BlueBrain/HighFive
+	url = https://github.com/highfive-devs/HighFive
 [submodule "3rdparty/hdf5"]
 	path = 3rdparty/hdf5
 	url = https://github.com/jcelerier/hdf5
