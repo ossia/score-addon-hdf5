@@ -4,11 +4,6 @@ if(EMSCRIPTEN OR MSVC)
     return()
 endif()
 
-if (NOT has_std_2b_flag)
- message(" -- HDF5 plugin requires C++23")
- return()
-endif()
-
 project(score_addon_datareader LANGUAGES CXX)
 
 # Use the Avendish the host (ossia score) provides; otherwise fetch it.
@@ -23,6 +18,13 @@ if(NOT Avendish_FOUND)
   list(APPEND CMAKE_PREFIX_PATH "${avendish_SOURCE_DIR}")
   find_package(Avendish REQUIRED)
 endif()
+
+# has_std_2b_flag is only known once score is set up
+if (NOT has_std_2b_flag)
+ message(" -- HDF5 plugin requires C++23")
+ return()
+endif()
+
 score_common_setup()
 
 block()
