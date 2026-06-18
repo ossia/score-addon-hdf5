@@ -1,23 +1,38 @@
-cmake_minimum_required(VERSION 3.13 FATAL_ERROR)
-
-if(NOT TARGET score_lib_base)
-  include(ScoreExternalAddon)
-endif()
-
-if(NOT TARGET score_plugin_avnd)
-  return()
-endif()
+cmake_minimum_required(VERSION 3.24 FATAL_ERROR)
 
 if(EMSCRIPTEN OR MSVC)
     return()
 endif()
 
+project(score_addon_datareader LANGUAGES CXX)
+
+# Max/MSP externals link the static CRT (/MT) on Windows, as the official
+# max-sdk-base requires. Set it for the whole addon -- before Avendish and the
+# object library are created -- so every target shares one runtime; mixing /MT
+# and /MD trips MSVC with LNK2038. (CMP0091 is NEW via cmake_minimum_required.)
+if(MSVC)
+  set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
+endif()
+
+# Use the Avendish the host (ossia score) provides; otherwise fetch it.
+find_package(Avendish QUIET)
+if(NOT Avendish_FOUND)
+  include(FetchContent)
+  FetchContent_Declare(
+    Avendish
+    GIT_REPOSITORY "https://github.com/celtera/avendish"
+    GIT_TAG 7eafe173)
+  FetchContent_Populate(Avendish)
+  list(APPEND CMAKE_PREFIX_PATH "${avendish_SOURCE_DIR}")
+  find_package(Avendish REQUIRED)
+endif()
+
+# has_std_2b_flag is only known once score is set up
 if (NOT has_std_2b_flag)
  message(" -- HDF5 plugin requires C++23")
  return()
 endif()
 
-project(score_addon_datareader LANGUAGES CXX)
 score_common_setup()
 
 block()
@@ -101,39 +116,34 @@ add_library(score_addon_hdf5
     DataReader/HDF5Ports.hpp
     DataReader/HDF5Ports.cpp
 )
-avnd_score_plugin_init(
-  BASE_TARGET score_addon_hdf5
-)
+avnd_addon_init(NAME score_addon_hdf5)
 
-avnd_score_plugin_add(
-  BASE_TARGET score_addon_hdf5
+avnd_addon_object(
+  BASE score_addon_hdf5
+  C_NAME HDF5_Reader1D
+  CLASS HDF5_Reader1D
+  NAMESPACE DataReader
   SOURCES
     DataReader/HDF5DataReader.hpp
-    DataReader/HDF5DataReader.cpp
-  TARGET HDF5_Reader1D
-  MAIN_CLASS HDF5_Reader1D
-  NAMESPACE DataReader
-)
+    DataReader/HDF5DataReader.cpp)
 
-avnd_score_plugin_add(
-  BASE_TARGET score_addon_hdf5
+avnd_addon_object(
+  BASE score_addon_hdf5
+  C_NAME HDF5_TextureReader
+  CLASS HDF5_TextureReader
+  NAMESPACE DataReader
   SOURCES
     DataReader/HDF5Texture.hpp
-    DataReader/HDF5Texture.cpp
-  TARGET HDF5_TextureReader
-  MAIN_CLASS HDF5_TextureReader
-  NAMESPACE DataReader
-)
+    DataReader/HDF5Texture.cpp)
 
-avnd_score_plugin_add(
-  BASE_TARGET score_addon_hdf5
+avnd_addon_object(
+  BASE score_addon_hdf5
+  C_NAME HDF5_AudioReader
+  CLASS HDF5_AudioReader
+  NAMESPACE DataReader
   SOURCES
     DataReader/HDF5Audio.hpp
-    DataReader/HDF5Audio.cpp
-  TARGET HDF5_AudioReader
-  MAIN_CLASS HDF5_AudioReader
-  NAMESPACE DataReader
-)
+    DataReader/HDF5Audio.cpp)
 
 
 target_link_libraries(score_addon_hdf5 PUBLIC
@@ -144,9 +154,5 @@ target_link_libraries(score_addon_hdf5 PUBLIC
 target_include_directories(score_addon_hdf5 PUBLIC
     "${CMAKE_CURRENT_SOURCE_DIR}/../../../3rdparty/libossia/3rdparty/r8brain-free-src"
 )
-avnd_score_plugin_finalize(
-  BASE_TARGET score_addon_hdf5
-  PLUGIN_VERSION 1
-  PLUGIN_UUID "81d2b26d-e225-4a22-ad49-57d65b47b124"
-)
+avnd_addon_finalize(NAME score_addon_hdf5 UUID 81d2b26d-e225-4a22-ad49-57d65b47b124 VERSION 1)
 
