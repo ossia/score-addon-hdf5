@@ -10,6 +10,21 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  ci:
+  # Build + package the score add-on (dev / SDK / JIT / release tracks).
+  score:
     uses: ossia/actions/.github/workflows/score-addon.yml@master
     secrets: inherit
+
+  # Build the same object(s) standalone, one artifact per back-end.
+  standalone:
+    uses: ossia/actions/.github/workflows/avnd-addon.yml@master
+    secrets: inherit
+    with:
+      # Mapped from CATEGORY object (default; no CATEGORY/BACKENDS declared).
+      # Links the HDF5 library (built from source / desktop), so wasm and other
+      # heavy back-ends are omitted -- standard hdf5 mapping.
+      pd: true
+      max: true
+      python: true
+      touchdesigner: true
+      godot: true
