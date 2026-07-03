@@ -85,7 +85,7 @@ jobs:
           additional-flags: ${{ matrix.config.additional_flags }}
 
       - name: Upload release
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: plugin-${{ matrix.config.os }}
           path: |
@@ -105,7 +105,7 @@ jobs:
         uses: ossia/actions/package-addon@master
 
       - name: Upload package
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: plugin
           path: deploy
