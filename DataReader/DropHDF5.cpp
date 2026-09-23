@@ -1,93 +1,59 @@
 #include "DropHDF5.hpp"
 
 #include <Curve/Commands/UpdateCurve.hpp>
-#include <Curve/Segment/Linear/LinearSegment.hpp>
+#include <Curve/Segment/PointArray/PointArraySegment.hpp>
 
 #include <Automation/AutomationModel.hpp>
+#include <Automation/Commands/SetAutomationMax.hpp>
 
 #include <DataReader/IncludeH5.hpp>
 #include <highfive/boost.hpp>
 #include <highfive/highfive.hpp>
 
+#include <ossia/math/safe_math.hpp>
+
+#include <limits>
+
 namespace DataReader
 {
 
-static Curve::SegmentData
-make_segment(int& current_id, double& cur_x, double& cur_y, double x, double y)
+//! The values of a column, normalized to [0, 1], and the range they came from.
+struct Samples
 {
-  Curve::SegmentData dat;
-  dat.id = Id<Curve::SegmentModel>{current_id};
-  dat.start.rx() = cur_x;
-  dat.start.ry() = cur_y;
-  dat.end.rx() = x;
-  dat.end.ry() = y;
-  cur_x = x;
-  cur_y = y;
-  dat.previous = Id<Curve::SegmentModel>{current_id - 1};
-  dat.following = Id<Curve::SegmentModel>{current_id + 1};
-  dat.type = Metadata<ConcreteKey_k, Curve::LinearSegment>::get();
-  dat.specificSegmentData = QVariant::fromValue(Curve::LinearSegmentData{});
-  return dat;
-}
-
-template <typename T, std::size_t N>
-static auto range_to_automation(
-    const boost::detail::multi_array::multi_array_view<T, N>& points, auto func)
-    = delete;
+  std::vector<Curve::SegmentData> curve;
+  double min{}, max{1.};
+};
 
 template <typename T>
-static auto range_to_automation(
-    const boost::detail::multi_array::multi_array_view<T, 1>& points, auto func)
+static Samples
+column_to_automation(const boost::detail::multi_array::multi_array_view<T, 1>& points)
 {
-  std::vector<Curve::SegmentData> segt;
-
+  Samples res;
   if(points.empty())
-    return segt;
-  int current_id = 0;
+    return res;
 
-  double cur_x = 0.;
-  double cur_y = points[0];
-
-  for(int i = 1, N = std::ssize(points); i < N; i++)
+  std::vector<float> values;
+  values.reserve(points.size());
+  // Non-finite values stay out of the range, and out of the curve.
+  double min = std::numeric_limits<double>::max();
+  double max = std::numeric_limits<double>::lowest();
+  for(const auto& v : points)
   {
-    auto x = double(i) / N;
-    auto y = points[i];
-
-    segt.push_back(make_segment(current_id, cur_x, cur_y, x, y));
-    current_id++;
+    if(!ossia::safe_isfinite(double(v)))
+      continue;
+    min = std::min(min, double(v));
+    max = std::max(max, double(v));
   }
-  segt.front().previous = std::nullopt;
-  segt.back().following = std::nullopt;
+  if(min > max)
+    return res;
+  const double span = max - min;
+  for(const auto& v : points)
+    values.push_back(span > 0. ? float((double(v) - min) / span) : 0.f);
 
-  return segt;
-}
-
-template <typename T>
-static auto range_to_automation(
-    const boost::detail::multi_array::multi_array_view<T, 2>& points, auto func)
-{
-  std::vector<Curve::SegmentData> segt;
-  if(points.empty())
-    return segt;
-  if(points[0].size() < 2)
-    return segt;
-  int current_id = 0;
-
-  double cur_x = points[0][0];
-  double cur_y = points[0][1];
-
-  for(int i = 1, N = std::ssize(points); i < N; i++)
-  {
-    auto x = points[i][0];
-    auto y = points[i][1];
-
-    segt.push_back(make_segment(current_id, cur_x, cur_y, x, y));
-    current_id++;
-  }
-  segt.front().previous = std::nullopt;
-  segt.back().following = std::nullopt;
-
-  return segt;
+  res.curve = Curve::curveFromSamples(values);
+  res.min = min;
+  res.max = span > 0. ? max : min + 1.;
+  return res;
 }
 
 template <typename T, std::size_t N>
@@ -120,7 +86,7 @@ process_dataset(std::string_view path, boost::multi_array<T, 2>&& A, auto func) 
     int column_size = matrix_shape[0];
 
     auto col_view = A[boost::indices[range_t(0, column_size)][column]];
-    if(auto res = range_to_automation(col_view, func); !res.empty())
+    if(auto res = column_to_automation(col_view); !res.curve.empty())
     {
       func(path, std::move(res));
       return;
@@ -275,7 +241,9 @@ void DropHandler::dropPath(
     p.setup = [data = std::move(generated_data)](
                   Process::ProcessModel& proc, score::Dispatcher& disp) mutable {
       auto& p = safe_cast<Automation::ProcessModel&>(proc);
-      disp.submit(new Curve::UpdateCurve(p.curve(), std::move(data)));
+      disp.submit(new Automation::SetMin(p, data.min));
+      disp.submit(new Automation::SetMax(p, data.max));
+      disp.submit(new Curve::UpdateCurve(p.curve(), std::move(data.curve)));
     };
     vec.push_back(p);
   });

@@ -1,7 +1,7 @@
 #include "DropCSV.hpp"
 
 #include <Curve/Commands/UpdateCurve.hpp>
-#include <Curve/Segment/Linear/LinearSegment.hpp>
+#include <Curve/Segment/PointArray/PointArraySegment.hpp>
 
 #include <Scenario/Commands/Metadata/ChangeElementLabel.hpp>
 #include <Scenario/Commands/Metadata/ChangeElementName.hpp>
@@ -10,54 +10,14 @@
 #include <Automation/Commands/SetAutomationMax.hpp>
 
 #include <ossia/detail/parse_strict.hpp>
+#include <ossia/math/safe_math.hpp>
+
+#include <limits>
 
 #include <AvndProcesses/DeviceRecorder.hpp>
 
 namespace DataReader
 {
-
-static Curve::SegmentData
-make_segment_csv(int& current_id, double& cur_x, double& cur_y, double x, double y)
-{
-  Curve::SegmentData dat;
-  dat.id = Id<Curve::SegmentModel>{current_id};
-  dat.start.rx() = cur_x;
-  dat.start.ry() = cur_y;
-  dat.end.rx() = x;
-  dat.end.ry() = y;
-  cur_x = x;
-  cur_y = y;
-  dat.previous = Id<Curve::SegmentModel>{current_id - 1};
-  dat.following = Id<Curve::SegmentModel>{current_id + 1};
-  dat.type = Metadata<ConcreteKey_k, Curve::LinearSegment>::get();
-  dat.specificSegmentData = QVariant::fromValue(Curve::LinearSegmentData{});
-  return dat;
-}
-
-static auto range_to_automation(const std::span<float>& points)
-{
-  std::vector<Curve::SegmentData> segt;
-
-  if(points.empty())
-    return segt;
-  int current_id = 0;
-
-  double cur_x = 0.;
-  double cur_y = points[0];
-
-  for(int i = 1, N = std::ssize(points); i < N; i++)
-  {
-    auto x = double(i) / N;
-    auto y = points[i];
-
-    segt.push_back(make_segment_csv(current_id, cur_x, cur_y, x, y));
-    current_id++;
-  }
-  segt.front().previous = std::nullopt;
-  segt.back().following = std::nullopt;
-
-  return segt;
-}
 
 void CSVDropHandler::dropPath(
     std::vector<ProcessDrop>& vec, const score::FilePath& filename,
@@ -109,9 +69,15 @@ void CSVDropHandler::dropPath(
       if(auto r = ossia::parse_strict<float>(v))
         res = *r;
 
+      // Non-finite values stay out of the range, and out of the curve.
+      if(!ossia::safe_isfinite(res))
+        res = std::numeric_limits<float>::quiet_NaN();
+      else
+      {
+        mins[track] = std::min(mins[track], res);
+        maxs[track] = std::max(maxs[track], res);
+      }
       tracks[track].push_back(res);
-      mins[track] = std::min(mins[track], res);
-      maxs[track] = std::max(maxs[track], res);
       track++;
     }
     rr++;
@@ -146,9 +112,10 @@ void CSVDropHandler::dropPath(
     vec.push_back(p);
   };
 
+  // Large columns become a single sampled segment.
   for(int i = 0; i < tracks.size(); i++)
   {
-    for_each(titles[i], range_to_automation(tracks[i]), mins[i], maxs[i]);
+    for_each(titles[i], Curve::curveFromSamples(tracks[i]), mins[i], maxs[i]);
   }
 }
 
