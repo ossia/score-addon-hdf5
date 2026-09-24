@@ -41,8 +41,18 @@ block()
     set(ZLIB_USE_LOCALCONTENT 1)
     set(HDF5_ALLOW_EXTERNAL_SUPPORT NO)
     set(HDF5_BUILD_HL_LIB NO)
-    set(BUILD_SHARED_LIBS 0)
-    set(BUILD_STATIC_LIBS 1)
+    # This file builds two plug-ins, and both need HDF5. Linked statically,
+    # each carries its own copy: with dynamic plug-ins, a process that loads
+    # both then has two HDF5 runtimes (library state, open-file tables, filter
+    # registry) whose globals interpose on each other -- an ODR violation that
+    # AddressSanitizer aborts on at load time. Build it once, shared, there.
+    if(SCORE_DYNAMIC_PLUGINS)
+      set(BUILD_SHARED_LIBS 1)
+      set(BUILD_STATIC_LIBS 0)
+    else()
+      set(BUILD_SHARED_LIBS 0)
+      set(BUILD_STATIC_LIBS 1)
+    endif()
     if(WIN32)
         set(H5_HAVE_VASPRINTF 0 CACHE "" INTERNAL)
     endif()
@@ -64,7 +74,9 @@ block()
   endblock()
 endblock()
 
-if(TARGET hdf5-static)
+if(TARGET hdf5-shared)
+  set(ossia_hdf5_lib hdf5-shared)
+elseif(TARGET hdf5-static)
   set(ossia_hdf5_lib hdf5-static)
 elseif(TARGET hdf5::hdf5)
   set(ossia_hdf5_lib hdf5::hdf5)
