@@ -107,6 +107,11 @@ target_link_libraries(score_addon_datareader PUBLIC
 target_include_directories(score_addon_datareader PUBLIC
     "${3RDPARTY_FOLDER}/csv2/include"
 )
+if(COMMAND score_register_license)
+  score_register_license(HDF5 URL "https://www.hdfgroup.org" FILES "${CMAKE_CURRENT_SOURCE_DIR}/3rdparty/hdf5/LICENSE")
+  score_register_license(HighFive URL "https://github.com/highfive-devs/highfive" FILES "${CMAKE_CURRENT_SOURCE_DIR}/3rdparty/HighFive/LICENSE")
+endif()
+
 setup_score_plugin(score_addon_datareader)
 
 add_library(score_addon_hdf5
