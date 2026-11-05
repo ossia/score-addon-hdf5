@@ -10,7 +10,7 @@ namespace DataReader
 
 void HDF5_Reader1D::operator()(halp::tick_musical t)
 {
-  if(!dataset->isValid())
+  if(!dataset || !dataset->isValid())
     return;
 
   // Time is the first index.
