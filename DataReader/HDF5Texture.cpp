@@ -6,7 +6,7 @@ namespace DataReader
 {
 void HDF5_TextureReader::operator()()
 {
-  if(!dataset->isValid())
+  if(!dataset || !dataset->isValid())
     return;
 
   if(dataset_dims.size() != 4)
