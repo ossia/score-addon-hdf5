@@ -193,3 +193,21 @@ avnd_score_plugin_finalize(
   PLUGIN_UUID "81d2b26d-e225-4a22-ad49-57d65b47b124"
 )
 
+# The readers driven the way the executor drives them, on files with an empty
+# dataset and datasets HighFive cannot read into numbers.
+if(SCORE_TESTING AND COMMAND score_add_test)
+  score_add_test(score_addon_hdf5_reader_test
+    SOURCES
+      tests/HDF5ReaderTest.cpp
+      DataReader/HDF5Ports.cpp
+      DataReader/HDF5DataReader.cpp
+      DataReader/HDF5Texture.cpp
+    LIBS
+      score_lib_state
+      HighFive::HighFive
+      ${ossia_hdf5_lib})
+  target_include_directories(score_addon_hdf5_reader_test PRIVATE
+    "${CMAKE_CURRENT_SOURCE_DIR}"
+    "${SCORE_ROOT_SOURCE_DIR}/3rdparty/avendish/include")
+endif()
+

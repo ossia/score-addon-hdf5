@@ -23,8 +23,16 @@ void HDF5_TextureReader::operator()()
 
   int frame = std::clamp(this->inputs.percent * (n_frames - 1.), 0., n_frames - 1.);
   thread_local boost::multi_array<double, 4> result;
-  dataset->select({(unsigned)frame, 0, 0, 0}, {1, (unsigned)height, (unsigned)width, 3})
-      .read(result);
+  // On the execution thread: a read HighFive throws on shows nothing new
+  try
+  {
+    dataset->select({(unsigned)frame, 0, 0, 0}, {1, (unsigned)height, (unsigned)width, 3})
+        .read(result);
+  }
+  catch(...)
+  {
+    return;
+  }
 
   int sp = 0;
   const auto& img = result[0];
