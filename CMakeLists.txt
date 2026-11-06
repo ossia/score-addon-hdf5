@@ -100,6 +100,8 @@ score_generate_command_list_file(
 )
 target_link_libraries(score_addon_datareader PUBLIC
     score_plugin_avnd
+    score_plugin_automation
+    score_plugin_curve
     ${ossia_hdf5_lib}
     HighFive::HighFive
 )
@@ -158,9 +160,33 @@ target_link_libraries(score_addon_hdf5 PUBLIC
     ${ossia_hdf5_lib}
 )
 
-target_include_directories(score_addon_hdf5 PUBLIC
-    "${CMAKE_CURRENT_SOURCE_DIR}/../../../3rdparty/libossia/3rdparty/r8brain-free-src"
-)
+# The audio reader resamples with r8brain. Inside score's tree it is the r8brain
+# target; out of the tree, its static members (r8bbase.cpp) are built into the
+# plug-in: from score's sources for a developer build, from the same r8brain
+# commit score pins for an SDK build, since the SDK ships neither.
+if(TARGET r8brain)
+  target_link_libraries(score_addon_hdf5 PRIVATE "$<BUILD_INTERFACE:r8brain>")
+else()
+  if(EXISTS "${SCORE_SDK}")
+    include(FetchContent)
+    FetchContent_Declare(hdf5_r8brain
+      URL https://github.com/avaneev/r8brain-free-src/archive/b3f0753d90b3325b8ea8a08fd699e8e6db26e5b5.tar.gz
+      DOWNLOAD_EXTRACT_TIMESTAMP TRUE
+      SOURCE_SUBDIR no-cmake
+    )
+    FetchContent_MakeAvailable(hdf5_r8brain)
+    set(HDF5_R8BRAIN_DIR "${hdf5_r8brain_SOURCE_DIR}")
+  else()
+    set(HDF5_R8BRAIN_DIR "${OSSIA_3RDPARTY_FOLDER}/r8brain-free-src")
+  endif()
+  set_source_files_properties("${HDF5_R8BRAIN_DIR}/r8bbase.cpp"
+    PROPERTIES
+      SKIP_UNITY_BUILD_INCLUSION ON
+      COMPILE_OPTIONS "$<$<NOT:$<CXX_COMPILER_ID:MSVC>>:-w>"
+  )
+  target_sources(score_addon_hdf5 PRIVATE "${HDF5_R8BRAIN_DIR}/r8bbase.cpp")
+  target_include_directories(score_addon_hdf5 SYSTEM PRIVATE "${HDF5_R8BRAIN_DIR}")
+endif()
 avnd_score_plugin_finalize(
   BASE_TARGET score_addon_hdf5
   PLUGIN_VERSION 1
