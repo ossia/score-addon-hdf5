@@ -16,3 +16,8 @@ jobs:
   ci:
     uses: ossia/actions/.github/workflows/score-addon.yml@master
     secrets: inherit
+    with:
+      # The JIT compiles the add-on's own sources against the score SDK; it cannot
+      # build the vendored HDF5 C library this add-on links, so the readers have no
+      # HDF5 to compile against there.
+      jit: false
